@@ -17,3 +17,18 @@ exports.showAllMahasiswa = function (req, res) {
 		}
 	});
 };
+
+exports.showById = function (req, res) {
+	const id = req.params.id;
+	connection.query(
+		"SELECT * FROM mahasiswa WHERE id = ?",
+		[id],
+		function (error, rows, fields) {
+			if (error) {
+				console.log(error);
+			} else {
+				respose.ok(rows, res);
+			}
+		}
+	);
+};
