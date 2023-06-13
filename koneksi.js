@@ -1,4 +1,4 @@
-var mysqli = require("mysqli");
+var mysqli = require("mysql");
 
 // buat keneksi database
 const conn = mysqli.createConnection({
