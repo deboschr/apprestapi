@@ -52,3 +52,23 @@ exports.add = function (req, res) {
 		}
 	);
 };
+
+// mengubah data berdasarkan id
+exports.edit = function (req, res) {
+	let id = req.body.id;
+	let nama = req.body.nama;
+	let npm = req.body.npm;
+	let jurusan = req.body.jurusan;
+
+	connection.query(
+		"UPDATE mahasiswa SET nama = ?, npm = ?, jurusan = ? WHERE id = ?",
+		[nama, npm, jurusan, id],
+		function (error, rows, fields) {
+			if (error) {
+				console.log(error);
+			} else {
+				respose.ok("Berhasil ubah data", res);
+			}
+		}
+	);
+};
