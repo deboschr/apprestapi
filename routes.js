@@ -10,4 +10,5 @@ module.exports = function (app) {
 	app.route("/show/:id").get(myJSON.showById);
 	app.route("/add").post(myJSON.add);
 	app.route('/edit').put(myJSON.edit);
+	app.route('/delete').delete(myJSON.delete);
 };
