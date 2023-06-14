@@ -75,7 +75,7 @@ exports.edit = function (req, res) {
 
 // menghapus data berdasarkan id
 exports.delete = function (req, res) {
-	let id = req.body.id
+	let id = req.body.id;
 	connection.query(
 		"DELETE FROM mahasiswa WHERE id = ?",
 		[id],
@@ -84,6 +84,20 @@ exports.delete = function (req, res) {
 				console.log(error);
 			} else {
 				respose.ok("Berhasil menghapus data", res);
+			}
+		}
+	);
+};
+
+// menampilkan matakuliah group
+exports.showGroupMatakuliah = function (req, res) {
+	connection.query(
+		"SELECT mahasiswa.id, mahasiswa.nama, mahasiswa.npm, mahasiswa.jurusan, matakuliah.nama as 'matakuliah', matakuliah.sks FROM frs JOIN mahasiswa JOIN matakuliah WHERE frs.idMahasiswa = mahasiswa.id AND frs.idMataKuliah = matakuliah.id ORDER BY mahasiswa.id",
+		function (error, rows, fields) {
+			if (error) {
+				console.log(error);
+			} else {
+				respose.oknested(rows, res);
 			}
 		}
 	);
