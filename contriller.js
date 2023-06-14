@@ -18,6 +18,7 @@ exports.showAllMahasiswa = function (req, res) {
 	});
 };
 
+// menampilkan data mahasiswa berdasarkan id
 exports.showById = function (req, res) {
 	const id = req.params.id;
 	connection.query(
@@ -28,6 +29,25 @@ exports.showById = function (req, res) {
 				console.log(error);
 			} else {
 				respose.ok(rows, res);
+			}
+		}
+	);
+};
+
+// Menambahkan data
+exports.add = function (req, res) {
+	const nama = req.body.nama;
+	const npm = req.body.npm;
+	const jurusan = req.body.jurusan;
+
+	connection.query(
+		"INSERT INTO mahasiswa (nama, npm, jurusan) VALUES (?, ?, ?)",
+		[nama, npm, jurusan],
+		function (error, rows, fields) {
+			if (error) {
+				console.log(error);
+			} else {
+				respose.ok("Berhasil menambahkan data", res);
 			}
 		}
 	);

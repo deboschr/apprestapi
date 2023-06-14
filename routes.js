@@ -6,6 +6,7 @@ module.exports = function (app) {
 	const myJSON = require("./contriller");
 
 	app.route("/").get(myJSON.index);
-	app.route("/tampil").get(myJSON.showAllMahasiswa);
-	app.route("/tampil/:id").get(myJSON.showById);
+	app.route("/show").get(myJSON.showAllMahasiswa);
+	app.route("/show/:id").get(myJSON.showById);
+	app.route("/add").post(myJSON.add);
 };
