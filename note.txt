@@ -3,3 +3,4 @@ installation
 morgan = npm i morgan
 IP = npm i ip
 jsonwentoken = npm i jsonwentoken
+md5 = npm i md5
