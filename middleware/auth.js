@@ -44,7 +44,56 @@ exports.registration = function (req, res) {
 };
 
 // controller for login
+
 //#### CARA 1
+exports.login = function (req, res) {
+	let { email, password } = req.body;
+
+	let loginQuery = "SELECT * FROM user WHERE email = ? AND password = ?";
+	let loginValues = [email, md5(password)];
+
+	connection.query(loginQuery, loginValues, function (error, rows) {
+		if (error) {
+			console.log(error);
+			response.error("Internal Server Error", res);
+		} else {
+			if (rows.length === 1) {
+				let user = rows[0];
+				let token = jwt.sign({ user }, config.secret, { expiresIn: "24h" });
+
+				let tokenData = {
+					id_user: user.id,
+					access_token: token,
+					ip_address: ip.address(),
+				};
+
+				let insertTokenQuery = "INSERT INTO token SET ?";
+				connection.query(insertTokenQuery, tokenData, function (error, result) {
+					if (error) {
+						console.log(error);
+						response.ok("Failed to generate token", res);
+					} else {
+						res.json({
+							success: true,
+							message: "JWT token generated",
+							token: token,
+							currentUser: tokenData.id_user,
+						});
+					}
+				});
+			} else {
+				response.ok("Invalid email or password!", res);
+			}
+		}
+	});
+};
+
+exports.halamanSiswa = function (req, res) {
+	response.ok("Halaman siswa berhasil terakses!", res)
+}
+
+
+//#### CARA 2
 // exports.login = function (req, res) {
 // 	let post = {
 // 		password: req.body.password,
@@ -94,46 +143,3 @@ exports.registration = function (req, res) {
 // 		}
 // 	});
 // };
-
-//#### CARA 2
-exports.login = function (req, res) {
-	let { email, password } = req.body;
-
-	let loginQuery = "SELECT * FROM user WHERE email = ? AND password = ?";
-	let loginValues = [email, md5(password)];
-
-	connection.query(loginQuery, loginValues, function (error, rows) {
-		if (error) {
-			console.log(error);
-			response.error("Internal Server Error", res);
-		} else {
-			if (rows.length === 1) {
-				let user = rows[0];
-				let token = jwt.sign({ user }, config.secret, { expiresIn: "24h" });
-
-				let tokenData = {
-					id_user: user.id,
-					access_token: token,
-					ip_address: ip.address(),
-				};
-
-				let insertTokenQuery = "INSERT INTO token SET ?";
-				connection.query(insertTokenQuery, tokenData, function (error, result) {
-					if (error) {
-						console.log(error);
-						response.ok("Failed to generate token", res);
-					} else {
-						res.json({
-							success: true,
-							message: "JWT token generated",
-							token: token,
-							currentUser: tokenData.id_user,
-						});
-					}
-				});
-			} else {
-				response.ok("Invalid email or password!", res);
-			}
-		}
-	});
-};
