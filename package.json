@@ -30,6 +30,7 @@
 	"dependencies": {
 		"ip": "^1.1.8",
 		"jsonwebtoken": "^9.0.0",
+		"md5": "^2.3.0",
 		"morgan": "^1.10.0"
 	}
 }
