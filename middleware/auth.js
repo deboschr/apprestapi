@@ -44,44 +44,95 @@ exports.registration = function (req, res) {
 };
 
 // controller for login
+
 exports.login = function (req, res) {
-	const { email, password } = req.body;
+	var post = {
+		password: req.body.password,
+		email: req.body.email,
+	};
 
-	const loginQuery = "SELECT * FROM user WHERE email = ? AND password = ?";
-	const loginValues = [email, md5(password)];
+	var loginQuery = "SELECT * FROM ?? WHERE ?? = ? AND ?? = ?";
+	var loginValue = [
+		"user",
+		"password",
+		md5(post.password),
+		"email",
+		post.email,
+	];
 
-	connection.query(loginQuery, loginValues, function (error, rows) {
+	loginQuery = mysql.format(loginQuery, loginValue);
+	connection.query(loginQuery, function (error, rows) {
 		if (error) {
 			console.log(error);
-			response.error("Internal Server Error", res);
 		} else {
-			if (rows.length === 1) {
-				const user = rows[0];
-				const token = jwt.sign({ user }, config.secret, { expiresIn: "24h" });
-
-				const tokenData = {
-					id_user: user.id,
+			if (rows.length == 1) {
+				var token = jwt.sign({ rows }, config.secret, { expiresIn: 1440 });
+				var id_user = rows[0].id;
+				var data = {
+					id_user: id_user,
 					access_token: token,
 					ip_address: ip.address(),
 				};
-
-				const insertTokenQuery = "INSERT INTO token SET ?";
-				connection.query(insertTokenQuery, tokenData, function (error, result) {
+				var insertQuery = "INSERT INTO ?? SET ?";
+				var table = ["token"];
+				insertQuery = mysql.format(insertQuery, table);
+				connection.query(insertQuery, data, function (error, rows) {
 					if (error) {
 						console.log(error);
-						response.error("Failed to generate token", res);
 					} else {
 						res.json({
 							success: true,
-							message: "JWT token generated",
+							message: "Token JWT tergenerate",
 							token: token,
-							currentUser: tokenData.id_user,
+							currUser: data.id_user,
 						});
 					}
 				});
 			} else {
-				response.error("Invalid email or password!", res);
+				res.json({ error: true, message: "Email atau password salah!" });
 			}
 		}
 	});
 };
+
+// exports.login = function (req, res) {
+// 	const { email, password } = req.body;
+
+// 	const loginQuery = "SELECT * FROM user WHERE email = ? AND password = ?";
+// 	const loginValues = [email, md5(password)];
+
+// 	connection.query(loginQuery, loginValues, function (error, rows) {
+// 		if (error) {
+// 			console.log(error);
+// 			response.error("Internal Server Error", res);
+// 		} else {
+// 			if (rows.length === 1) {
+// 				const user = rows[0];
+// 				const token = jwt.sign({ user }, config.secret, { expiresIn: "24h" });
+
+// 				const tokenData = {
+// 					id_user: user.id,
+// 					access_token: token,
+// 					ip_address: ip.address(),
+// 				};
+
+// 				const insertTokenQuery = "INSERT INTO token SET ?";
+// 				connection.query(insertTokenQuery, tokenData, function (error, result) {
+// 					if (error) {
+// 						console.log(error);
+// 						response.error("Failed to generate token", res);
+// 					} else {
+// 						res.json({
+// 							success: true,
+// 							message: "JWT token generated",
+// 							token: token,
+// 							currentUser: tokenData.id_user,
+// 						});
+// 					}
+// 				});
+// 			} else {
+// 				response.error("Invalid email or password!", res);
+// 			}
+// 		}
+// 	});
+// };
