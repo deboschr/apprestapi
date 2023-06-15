@@ -6,47 +6,82 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/secret");
 const ip = require("ip");
 
-// controller for register
+// controller for registration
 exports.registration = function (req, res) {
-	let post = {
-		username: req.body.username,
-		email: req.body.email,
-		password: md5(req.body.password),
-		role: req.body.role,
-		tanggal: new Date(req.body.tanggal),
+	const { username, email, password, role, tanggal } = req.body;
+
+	const post = {
+		username,
+		email,
+		password: md5(password),
+		role,
+		tanggal: new Date(tanggal),
 	};
 
-	let query = "SELECT email FROM ?? WHERE ?? = ?";
-	let table = ["user", "email", post.email];
+	const checkEmailQuery = "SELECT email FROM user WHERE email = ?";
+	const checkEmailValues = [post.email];
 
-	query = mysql.format(query, table);
-
-	connection.query(query, function (err, rows) {
+	connection.query(checkEmailQuery, checkEmailValues, function (err, rows) {
 		if (err) {
 			console.log(err);
+			response.error("Internal Server Error", res);
 		} else {
-			if (rows.length == 0) {
-				let query = "INSERT INTO ?? SET ?";
-				let table = ["user"];
-				query = mysql.format(query, table);
-				connection.query(query, post, function (error, rows) {
+			if (rows.length === 0) {
+				const insertUserQuery = "INSERT INTO user SET ?";
+				connection.query(insertUserQuery, post, function (error, result) {
 					if (error) {
 						console.log(error);
+						response.error("Failed to insert user", res);
 					} else {
-						response.ok("Berhasil menambahkan data user baru!", res);
+						response.ok("Successfully added a new user!", res);
 					}
 				});
 			} else {
-				response.ok("Email sudah terdaftar!", res);
+				response.error("Email already registered!", res);
 			}
 		}
 	});
 };
 
-// controller untuk login
-exports.login = function(req, res) {
-	let post = {
-		email: req.body.email,
-		password: req.body.password
-	}
-}
+// controller for login
+exports.login = function (req, res) {
+	const { email, password } = req.body;
+
+	const loginQuery = "SELECT * FROM user WHERE email = ? AND password = ?";
+	const loginValues = [email, md5(password)];
+
+	connection.query(loginQuery, loginValues, function (error, rows) {
+		if (error) {
+			console.log(error);
+			response.error("Internal Server Error", res);
+		} else {
+			if (rows.length === 1) {
+				const user = rows[0];
+				const token = jwt.sign({ user }, config.secret, { expiresIn: "24h" });
+
+				const tokenData = {
+					id_user: user.id,
+					access_token: token,
+					ip_address: ip.address(),
+				};
+
+				const insertTokenQuery = "INSERT INTO token SET ?";
+				connection.query(insertTokenQuery, tokenData, function (error, result) {
+					if (error) {
+						console.log(error);
+						response.error("Failed to generate token", res);
+					} else {
+						res.json({
+							success: true,
+							message: "JWT token generated",
+							token: token,
+							currentUser: tokenData.id_user,
+						});
+					}
+				});
+			} else {
+				response.error("Invalid email or password!", res);
+			}
+		}
+	});
+};
